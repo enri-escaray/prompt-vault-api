@@ -77,6 +77,25 @@ app.delete("/api/prompts/:id", (req, res) => {
   });
 });
 
+app.put("/api/prompts/:id", (req, res) => {
+  const promptId = parseInt(req.params.id);
+  const promptEncontrado = prompts.find(prompt => promptId === prompt.id);
+
+  if(!promptEncontrado){
+    return res.status(404).json({mensaje: "Error al actualizar: el prompt no existe"});
+  }
+
+  // 3. Si existe, sobrescribimos sus propiedades con la nueva información que llega en req.body
+  // Usamos el operador lógico || (OR) para que, si el usuario olvida enviar algún campo, se conserve el valor viejo
+  promptEncontrado.rol = req.body.rol || promptEncontrado.rol;
+  promptEncontrado.contenido = req.body.contenido || promptEncontrado.contenido;
+
+  res.json({
+    mensaje: "Prompt actualizado con exito",
+    prompt: promptEncontrado
+  });
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
