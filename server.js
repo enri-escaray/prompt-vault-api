@@ -24,6 +24,26 @@ app.get("/api/prompts", (req,res) => {
   res.json(prompts)
 } )
 
+app.get("/api/prompts/:id", (req, res)=> {
+  //Extraemos el ID de la URL usando req.params
+  //todo lo que viaja por la URL es texto (String). 
+  // Usamos parseInt() para convertir ese texto en un número matemático
+  const promptId= parseInt(req.params.id)
+
+  // .find() es un método de JavaScript que recorre el arreglo uno por uno
+  //buscamos el prompt que coincida con ese id
+  const promptEncontrado = prompts.find(prompt => prompt.id === promptId)
+
+  //manejo de errores
+  // id inexistente
+  if(!promptEncontrado) {
+    //si no lo encuentra se responde con el error 404 (not found)
+    return res.status(404).json({mensaje: "El prompt solicitado no existe en la base de datos"})
+
+  }
+  res.json(promptEncontrado);
+})
+
 app.post("/api/prompts", (req, res) => {
   const nuevoPrompts = {
     id : prompts.length + 1,
