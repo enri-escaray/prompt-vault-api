@@ -58,6 +58,25 @@ app.post("/api/prompts", (req, res) => {
   res.status(201).json(nuevoPrompts);
 })
 
+app.delete("/api/prompts/:id", (req, res) => {
+  //extraemos el id y lo convertimos a tipo int
+  const promptId = parseInt(req.params.id);
+
+  //buscamos la posicion del prompt
+  const indice = prompts.findIndex(prompt => promptId === prompt.id)
+
+  if(indice === -1){
+    return res.status(404).json({mensaje: "Error al borrar: el prompt no existe"})
+  }
+
+  //aqui decimos que en el lugar del indice borre un dato
+  const promptBorrado = prompts.splice(indice, 1);
+  res.json({
+    mensaje: "Prompt eliminado de la boveda con exito",
+    prompt_eliminado: promptBorrado[0]
+  });
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
