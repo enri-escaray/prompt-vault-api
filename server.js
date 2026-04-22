@@ -1,27 +1,35 @@
+const fs = require("fs");
 const express = require('express')
 const app = express()
 app.use(express.json()) // poder recibir informacion JSON
 const port = 3000
 
-const prompts = [
-  { 
-    id: 1, 
-    rol: "system", 
-    contenido: "Eres un asistente virtual para una barbería. Debes responder de forma amable, consultar disponibilidad y agendar turnos." 
-  },
-  { 
-    id: 2, 
-    rol: "user", 
-    contenido: "Actúa como un experto en Data Science y explícame cómo funciona un perceptrón de manera sencilla." 
-  }
-];
+// Funciones Auxiliares para manejar el archivo físico
+function leerBoveda(){
+  const datosTexto = fs.readFileSync("boveda.json", "utf-8");
+  return JSON.parse(datosTexto);
+}
+
+function guardarBoveda(datos){
+  // JSON.stringify traduce de JavaScript a texto. 
+  // El 'null, 2' es un truco profesional para que el archivo
+  // .json se guarde con tabulaciones ordenadas y
+  //  no en una sola línea ilegible.
+  const textoGuardar = JSON.stringify(datos, null, 2);
+
+  //fs.writeFileSync es el hermano de readFileSync. 
+  //Toma la ruta del archivo y el texto que quieres inyectarle.
+  fs.writeFileSync("boveda.json", textoGuardar);
+}
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
 app.get("/api/prompts", (req,res) => {
-  res.json(prompts)
+  const prompts = leerBoveda();
+
+  res.json(prompts);
 } )
 
 app.get("/api/prompts/:id", (req, res)=> {
@@ -30,6 +38,7 @@ app.get("/api/prompts/:id", (req, res)=> {
   // Usamos parseInt() para convertir ese texto en un número matemático
   const promptId= parseInt(req.params.id)
 
+  const prompts = leerBoveda();
   // .find() es un método de JavaScript que recorre el arreglo uno por uno
   //buscamos el prompt que coincida con ese id
   const promptEncontrado = prompts.find(prompt => prompt.id === promptId)
@@ -45,6 +54,8 @@ app.get("/api/prompts/:id", (req, res)=> {
 })
 
 app.post("/api/prompts", (req, res) => {
+  const prompts = leerBoveda();
+
   const nuevoPrompts = {
     id : prompts.length + 1,
     rol: req.body.rol,
@@ -54,11 +65,14 @@ app.post("/api/prompts", (req, res) => {
   //guardamos el prompts en la base de datos temporal
   prompts.push(nuevoPrompts);
 
+  guardarBoveda(prompts)
+
   //Responde con un codigo 201(creado) y enviamos el prompts guardado
   res.status(201).json(nuevoPrompts);
 })
 
 app.delete("/api/prompts/:id", (req, res) => {
+  const prompts = leerBoveda();
   //extraemos el id y lo convertimos a tipo int
   const promptId = parseInt(req.params.id);
 
@@ -75,9 +89,11 @@ app.delete("/api/prompts/:id", (req, res) => {
     mensaje: "Prompt eliminado de la boveda con exito",
     prompt_eliminado: promptBorrado[0]
   });
+  guardarBoveda(prompts)
 });
 
 app.put("/api/prompts/:id", (req, res) => {
+  const prompts = leerBoveda();
   const promptId = parseInt(req.params.id);
   const promptEncontrado = prompts.find(prompt => promptId === prompt.id);
 
@@ -94,6 +110,8 @@ app.put("/api/prompts/:id", (req, res) => {
     mensaje: "Prompt actualizado con exito",
     prompt: promptEncontrado
   });
+
+  guardarBoveda(prompts);
 });
 
 app.listen(port, () => {
