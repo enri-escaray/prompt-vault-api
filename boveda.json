@@ -6,12 +6,12 @@
   },
   {
     "id": 2,
-    "rol": "user",
-    "contenido": "Actúa como un experto en Data Science."
+    "rol": "user-client",
+    "contenido": "Esta es la nueva instrucciom que ah sobreescrito a la anterior"
   },
   {
-    "id": 3,
-    "rol": "experto en IA",
+    "id": 4,
+    "rol": "experto en Blockchain",
     "contenido": "Esta es la nueva instrucciom que ah sobreescrito a la anterior"
   }
 ]
