@@ -1,9 +1,12 @@
 require("dotenv").config();
 const express = require('express');
+const conectarDB = require("./config/db") //conexion a Mongo
+conectarDB();
 const app = express();
 const promptRoutes = require("./routes/promptRoutes");
 app.use(express.json()) // poder recibir informacion JSON
 const port = process.env.port;
+
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
