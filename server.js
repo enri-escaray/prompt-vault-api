@@ -25,12 +25,16 @@ const swaggerOptions = {
       version: '1.0.0',
       description: 'Documentacion interactiva de la API para gestionar prompts de IA',
     },
-    servers: [
-      {
-        url: `http://localhost:${process.env.PORT || 3000}`,
-        description: 'Servidor Local'
-      },
-    ],
+servers: [
+  {
+    url: 'https://mi-boveda-api.onrender.com', // Tu URL pública de Render
+    description: 'Servidor de Producción'
+  },
+  {
+    url: `http://localhost:${process.env.PORT || 3000}`,
+    description: 'Servidor Local'
+  }
+],
   },
   // 2. ¿Dónde debe buscar Swagger nuestros comentarios? En la carpeta de rutas.
   apis: ['./routes/*.js'], 
