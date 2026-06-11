@@ -7,7 +7,7 @@ conectarDB();
 const app = express();
 const promptRoutes = require("./routes/promptRoutes");
 app.use(express.json()) // poder recibir informacion JSON
-const port = process.env.port;
+const PORT = process.env.PORT || 3000;
 
 
 app.get('/', (req, res) => {
@@ -44,6 +44,6 @@ app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
 
 app.use("/api/prompts", promptRoutes);
 
-app.listen(port, () => {
-  console.log(`Bóveda de Prompts Activa en el puerto ${port}`);
+app.listen(PORT, () => {
+  console.log(`Bóveda de Prompts Activa en el puerto ${PORT}`);
 });
