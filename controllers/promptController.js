@@ -1,54 +1,54 @@
-const fs = require("fs");
-
-// Funciones Auxiliares para manejar el archivo físico
-function leerBoveda(){
-  const datosTexto = fs.readFileSync("boveda.json", "utf-8");
-  return JSON.parse(datosTexto);
-}
-
-function guardarBoveda(datos){
-  // JSON.stringify traduce de JavaScript a texto. 
-  // El 'null, 2' es un truco profesional para que el archivo
-  // .json se guarde con tabulaciones ordenadas y
-  //  no en una sola línea ilegible.
-  const textoGuardar = JSON.stringify(datos, null, 2);
-
-  //fs.writeFileSync es el hermano de readFileSync. 
-  //Toma la ruta del archivo y el texto que quieres inyectarle.
-  fs.writeFileSync("boveda.json", textoGuardar);
-}
+const Prompt = require("../models/Prompt")
 
 // Definimos la función que contiene la lógica de nuestro GET principal
-const obtenerTodosLosPrompts = (req, res) => {
-  const prompts = leerBoveda();
-  res.json(prompts);
+const obtenerTodosLosPrompts = async (req, res) => {
+  try {
+  // le pedimos a mongoose que busque TODOS los documentos en BD
+  //y usamos await para que el servidor no se congele mientras espera
+    const prompts = await Prompt.find();
+    res.json(prompts);
+  }catch (error) {
+    res.status(500).json({mensaje: "Error al obtener los prompts de la BD" });
+  }
 };
 
-const obtenerPromptPorId = (req, res) => {
+const obtenerPromptPorId = async(req, res) => {
+  try{
+    const promptId= req.params.id;
 
-      //Extraemos el ID de la URL usando req.params
-  //todo lo que viaja por la URL es texto (String). 
-  // Usamos parseInt() para convertir ese texto en un número matemático
-  const promptId= parseInt(req.params.id)
+    // 2. Le pedimos a Mongoose que busque exactamente ese ID en la nube
+    const promptEncontrado = await Prompt.findById(promptId);
 
-  const prompts = leerBoveda();
-  // .find() es un método de JavaScript que recorre el arreglo uno por uno
-  //buscamos el prompt que coincida con ese id
-  const promptEncontrado = prompts.find(prompt => prompt.id === promptId)
+    if(!promptEncontrado) {
+      //si no lo encuentra se responde con el error 404 (not found)
+      return res.status(404).json({mensaje: "El prompt solicitado no existe en la base de datos"})
 
-  //manejo de errores
-  // id inexistente
-  if(!promptEncontrado) {
-    //si no lo encuentra se responde con el error 404 (not found)
-    return res.status(404).json({mensaje: "El prompt solicitado no existe en la base de datos"})
+    }
+    res.json(promptEncontrado);
+  } catch (error) {
+    // Si el usuario envía un ID con formato inválido (ej. muy corto), MongoDB lanzará un error y caeremos aquí
+    res.status(500).json({mensaje: "Error de formato o conexion al buscar el prompt", detalles: error.message});
 
   }
-  res.json(promptEncontrado);
 };
 
-const crearPrompt = (req, res) => {
-    const prompts = leerBoveda();
+const crearPrompt = async (req, res) => {
+  try {
+    //le pasamos a mongose los datos que llegaron al cuerpo (req.body)
+    //mongoose automaticamente verificara que cumplan con las reglas de Schema
+    const nuevoPrompt = await Prompt.create({
+      rol: req.body.rol,
+      contenido: req.body.contenido
+    });
 
+    //2. respondemos con el codigo 201 (creado) y mostramos el doc final
+    res.status(201).json(nuevoPrompt);
+  } catch (error) {
+    res.status(400).json({
+      mensaje: "Error al guardar en la base de datos",
+      detalles: error.message
+    });
+  }
   const nuevoPrompts = {
     id : prompts.length + 1,
     rol: req.body.rol,
@@ -64,48 +64,56 @@ const crearPrompt = (req, res) => {
   res.status(201).json(nuevoPrompts);
 };
 
-const actualizarPrompt = (req, res) => {
-    const prompts = leerBoveda();
-  const promptId = parseInt(req.params.id);
-  const promptEncontrado = prompts.find(prompt => promptId === prompt.id);
+const actualizarPrompt = async(req, res) => {
+  try{
+    const promptId = req.params.id;
 
-  if(!promptEncontrado){
-    return res.status(404).json({mensaje: "Error al actualizar: el prompt no existe"});
+    // findByIdAndUpdate toma 3 parámetros: El ID, la nueva información, y configuraciones extra
+    const promptActualizado = await Prompt.findByIdAndUpdate(
+      promptId,
+      {
+        rol: req.body.rol,
+        contenido: req.body.contenido
+      },
+
+      // { new: true } obliga a Mongoose a devolverte el objeto ya modificado (por defecto devuelve el viejo)
+      // { runValidators: true } obliga a revisar que no estén intentando mandar campos vacíos
+      {new: true, runValidators: true}
+
+    );
+
+    if (!promptActualizado){
+      return res.status(404).json({mensaje: "Error al actualizar: el prompt no existe"});
+    }
+
+    res.json({
+      mensaje: "Prompt actualizado ",
+      prompt: promptActualizado
+    }
+    );
+  }catch (error){
+    res.status(500).json({mensaje: "Error de formato o conexion al actualizar", detalles: error.message });
+
+  }};
+
+const eliminarPrompt = async(req, res) => {
+  try{
+    const promptId = req.params.id;
+
+    // Mongoose busca el ID y lo demuele directamente en la base de datos
+    const promptBorrado = await Prompt.findByIdAndDelete(promptId);
+
+    if (!promptBorrado){
+      return res.status(404).json({mensaje: "Error al borrar: el prompt no existe"});
+
+    }
+    res.json({
+      mensaje: "Prompt eliminado con exito",
+      prompt_eliminado: promptBorrado
+    });
+  }catch (error){
+    res.status(500).json({mensaje: "Error de formato o conexion al eliminar", detalles: error.message});
   }
-
-  // 3. Si existe, sobrescribimos sus propiedades con la nueva información que llega en req.body
-  // Usamos el operador lógico || (OR) para que, si el usuario olvida enviar algún campo, se conserve el valor viejo
-  promptEncontrado.rol = req.body.rol || promptEncontrado.rol;
-  promptEncontrado.contenido = req.body.contenido || promptEncontrado.contenido;
-
-  res.json({
-    mensaje: "Prompt actualizado con exito",
-    prompt: promptEncontrado
-  });
-
-  guardarBoveda(prompts);
-};
-
-const eliminarPrompt = (req, res) => {
-
-      const prompts = leerBoveda();
-  //extraemos el id y lo convertimos a tipo int
-  const promptId = parseInt(req.params.id);
-
-  //buscamos la posicion del prompt
-  const indice = prompts.findIndex(prompt => promptId === prompt.id)
-
-  if(indice === -1){
-    return res.status(404).json({mensaje: "Error al borrar: el prompt no existe"})
-  }
-
-  //aqui decimos que en el lugar del indice borre un dato
-  const promptBorrado = prompts.splice(indice, 1);
-  res.json({
-    mensaje: "Prompt eliminado de la boveda con exito",
-    prompt_eliminado: promptBorrado[0]
-  });
-  guardarBoveda(prompts)
 };
 
 
