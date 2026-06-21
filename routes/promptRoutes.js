@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router(); // creamos un mini enrutador
+const verificarToken = require('../middleware/authMiddleware');
 
 // 1. Importamos el "trabajador" (la función) desde nuestra carpeta controllers
 // Usamos '../' para salir de la carpeta routes y poder entrar a controllers
@@ -96,7 +97,7 @@ router.get("/:id", obtenerPromptPorId);
  *       201:
  *         description: "Prompt creado exitosamente"
  */
-router.post("/", crearPrompt);
+router.post("/", verificarToken ,crearPrompt);
 
 /**
  * @swagger
@@ -134,7 +135,7 @@ router.post("/", crearPrompt);
  *       200:
  *         description: "Prompt actualizado exitosamente"
  */
-router.put("/:id", actualizarPrompt);
+router.put("/:id", verificarToken ,actualizarPrompt);
 
 /**
  * @swagger
@@ -158,7 +159,7 @@ router.put("/:id", actualizarPrompt);
  *       404:
  *         description: El prompt no existe en la base de datos
  */
-router.delete("/:id", eliminarPrompt);
+router.delete("/:id", verificarToken ,eliminarPrompt);
 
 // 3. Exportamos el enrutador para que server.js lo pueda usar
 module.exports = router;
