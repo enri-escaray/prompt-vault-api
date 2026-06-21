@@ -74,6 +74,8 @@ router.get("/:id", obtenerPromptPorId);
  *     summary: Crea un nuevo prompt
  *     tags:
  *       - Prompts
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -103,6 +105,8 @@ router.post("/", crearPrompt);
  *     summary: Actualizar un nuevo prompt
  *     tags:
  *       - Prompts
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -139,6 +143,8 @@ router.put("/:id", actualizarPrompt);
  *     summary: Elimina un prompt especifico por su ID
  *     tags:
  *       - Prompts
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
