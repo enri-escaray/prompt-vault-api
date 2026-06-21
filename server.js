@@ -1,4 +1,5 @@
 require("dotenv").config();
+const authRoutes = require("./routes/authRoutes")
 const express = require('express');
 const swaggerUI = require(`swagger-ui-express`);
 const swaggerJsDoc = require(`swagger-jsdoc`);
@@ -35,6 +36,16 @@ servers: [
     description: 'Servidor Local'
   }
 ],
+
+components: {
+  securitySchemes: {
+    bearerAuth: {
+      type: `http`,
+      scheme: `bearer`,
+      bearerFormat: `JWT`,
+    }
+  }
+}
   },
   // 2. ¿Dónde debe buscar Swagger nuestros comentarios? En la carpeta de rutas.
   apis: ['./routes/*.js'], 
@@ -47,6 +58,7 @@ app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
 ///
 
 app.use("/api/prompts", promptRoutes);
+app.use("/api/auth", authRoutes);
 
 app.listen(PORT, () => {
   console.log(`Bóveda de Prompts Activa en el puerto ${PORT}`);
