@@ -34,7 +34,7 @@ Si deseas correr este proyecto en tu entorno local para revisarlo a profundidad,
 
 1. Clona el repositorio:
    ```bash
-   git clone [https://github.com/TU_USUARIO/prompt-vault-api.git](https://github.com/TU_USUARIO/prompt-vault-api.git)
+   git clone https://github.com/enri-escaray/prompt-vault-api.git
    ```
 
 2. Instala las dependencias:
